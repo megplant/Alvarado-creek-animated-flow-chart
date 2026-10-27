@@ -1,0 +1,103 @@
+
+<style>
+  .wrap { background: linear-gradient(160deg,#0a1628 0%,#102040 60%,#0d2035 100%); border-radius: 14px; padding: 24px 28px; font-family: "Segoe UI", sans-serif; }
+  .title { color: #7ecfff; font-size: 15px; font-weight: 600; letter-spacing: .07em; margin-bottom: 2px; }
+  .sub { color: #5ab0cc; font-size: 11px; letter-spacing: .12em; margin-bottom: 18px; }
+  .summary { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .card { background: rgba(20,60,110,0.55); border: 1px solid rgba(60,160,220,0.25); border-radius: 9px; padding: 9px 16px; }
+  .card-label { color: #5ab0cc; font-size: 10px; letter-spacing: .1em; }
+  .card-val { color: #7ef0ff; font-size: 17px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { border-bottom: 1.5px solid rgba(60,160,220,0.4); }
+  th { color: #5ab0cc; font-weight: 500; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; padding: 0 14px 10px; text-align: right; }
+  th:first-child { text-align: center; }
+  td { padding: 10px 14px; text-align: right; border-bottom: 1px solid rgba(60,140,200,0.1); }
+  td:first-child { text-align: center; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(30,100,180,0.18); }
+  .st-badge { display: inline-block; background: rgba(20,80,160,0.6); border: 1px solid rgba(60,160,230,0.5); border-radius: 6px; color: #7ecfff; font-size: 11px; font-weight: 600; width: 28px; text-align: center; padding: 2px 0; }
+  .vel-bar-wrap { display: flex; align-items: center; gap: 7px; justify-content: flex-end; }
+  .vel-bar { height: 6px; border-radius: 3px; min-width: 2px; }
+  .depth-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #7ef; background: #1a8fdd; margin-right: 5px; vertical-align: middle; }
+  .num { color: #cde8ff; }
+  .muted { color: #5a8aaa; }
+  .discharge-val { color: #7ef0ff; font-weight: 500; }
+  .total-row td { border-top: 1.5px solid rgba(60,160,220,0.4); color: #7ecfff; font-weight: 600; padding-top: 12px; }
+  .total-row td:first-child { color: #5ab0cc; font-size: 11px; letter-spacing:.08em; }
+</style>
+
+<div class="wrap">
+  <div class="title">Alvarado Creek — Station Data</div>
+  <div class="sub">Hydrology Assessment &nbsp;·&nbsp; Feb 18 2026 &nbsp;·&nbsp; 8 Stations</div>
+
+  <div class="summary">
+    <div class="card"><div class="card-label">STREAM WIDTH</div><div class="card-val">8.58 ft</div></div>
+    <div class="card"><div class="card-label">X-SEC AREA</div><div class="card-val">11.38 ft²</div></div>
+    <div class="card"><div class="card-label">TOTAL DISCHARGE</div><div class="card-val">9.13 cfs</div></div>
+    <div class="card"><div class="card-label">TOTAL DISCHARGE</div><div class="card-val">68.29 gps</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>St.</th>
+        <th>Mid Point (ft)</th>
+        <th>Depth (ft)</th>
+        <th>Velocity (ft/s)</th>
+        <th>Discharge (cfs)</th>
+        <th>% of Total Q</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<script>
+const data = [
+  { st:1, mid:1.51, depth:0.50, vel:0.05, q:0.01 },
+  { st:2, mid:2.52, depth:0.90, vel:0.15, q:0.14 },
+  { st:3, mid:3.53, depth:0.92, vel:0.19, q:0.18 },
+  { st:4, mid:4.54, depth:1.75, vel:1.88, q:3.32 },
+  { st:5, mid:5.55, depth:1.60, vel:1.40, q:2.26 },
+  { st:6, mid:6.56, depth:1.25, vel:0.80, q:1.01 },
+  { st:7, mid:7.57, depth:1.30, vel:1.20, q:1.58 },
+  { st:8, mid:8.58, depth:1.80, vel:0.35, q:0.64 }
+];
+const totalQ = 9.13;
+const maxVel = Math.max(...data.map(d=>d.vel));
+const maxDepth = Math.max(...data.map(d=>d.depth));
+
+function velColor(v) {
+  const n = v / maxVel;
+  const r = Math.round(20  + n*180);
+  const g = Math.round(120 + n*120);
+  const b = Math.round(220 + n*35);
+  return `rgb(${r},${g},${b})`;
+}
+
+const tbody = document.getElementById("tbody");
+data.forEach(d => {
+  const pct = ((d.q / totalQ)*100).toFixed(1);
+  const barW = Math.round((d.vel / maxVel) * 70);
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><span class="st-badge">${d.st}</span></td>
+    <td class="num">${d.mid.toFixed(2)}</td>
+    <td><span class="depth-dot" style="background:#1a8fdd;width:${6+Math.round((d.depth/maxDepth)*8)}px;height:${6+Math.round((d.depth/maxDepth)*8)}px;border-radius:50%;display:inline-block;border:1.5px solid #7ef;vertical-align:middle;margin-right:5px;"></span><span class="num">${d.depth.toFixed(2)}</span></td>
+    <td>
+      <div class="vel-bar-wrap">
+        <div class="vel-bar" style="width:${barW}px;background:${velColor(d.vel)};opacity:0.85;"></div>
+        <span class="num">${d.vel.toFixed(2)}</span>
+      </div>
+    </td>
+    <td class="discharge-val">${d.q.toFixed(2)}</td>
+    <td class="num">${pct}%</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+const tot = document.createElement("tr");
+tot.className = "total-row";
+tot.innerHTML = `<td colspan="4">TOTAL</td><td>9.13</td><td>100%</td>`;
+tbody.appendChild(tot);
+</script>
